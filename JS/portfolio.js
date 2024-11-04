@@ -45,3 +45,20 @@ document.addEventListener("click", function(event){
         closeForm()
     }
 }, false )
+
+// This code adds an event listener to the form that sends the form data to your /form endpoint when the form is submitted
+
+const form = document.getElementById('myForm');
+
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+
+  const formData = new FormData(form);
+  fetch('/form', {
+    method: 'POST',
+    body: formData,
+  })
+    .then((response) => response.json())
+    .then((data) => console.log(data))
+    .catch((error) => console.error(error));
+});
