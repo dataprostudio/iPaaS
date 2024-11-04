@@ -1,6 +1,10 @@
 const express = require('express');
 const app = express();
+const formsRouter = require('./forms');
 const port = 3000;
+
+app.use('/form', formsRouter);
+
 
 app.post('/form', (req, res) => {
   const name = req.body.name;
