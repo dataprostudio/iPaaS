@@ -1,52 +1,47 @@
 const express = require('express');
 const app = express();
-const port = 3000;
+const formsRouter = require('./forms');
+const pool = new Pool({
+  user: 'your_username',
+  host: 'your_host',
+  database: 'your_database',
+  password: 'your_password',
+  port: 5432,
+});
 
-// Middleware to parse incoming request data
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Endpoint to handle form submission
+// Route to handle form submission
 app.post('/form', (req, res) => {
-  const name = req.body.name;
-  const telephone = req.body.telephone;
-  const email = req.body.email;
-  const message1 = req.body.message1;
-  const message2 = req.body.message2;
-  const message3 = req.body.message3;
+  const { name, telephone, email, message1, message2, message3 } = req.body;
 
-  // PostgreSQL connection setup
-  const { Pool } = require('pg');
-  const pool = new Pool({
-    user: 'your_username',
-    host: 'your_host',
-    database: 'your_database',
-    password: 'your_password',
-    port: 5432,
-  });
+  // Validate input data
+  if (!name || !telephone || !email || !message1 || !message2 || !message3) {
+    return res.status(400).send('Please fill out all fields');
+  }
 
-  // Insert data into PostgreSQL
   const query = {
-    text: `INSERT INTO waiting_list (name, telephone, email, message1, message2, message3)
-           VALUES ($1, $2, $3, $4, $5, $6)`,
+    text: `
+      INSERT INTO waiting_list (name, telephone, email, message1, message2, message3)
+      VALUES ($1, $2, $3, $4, $5, $6)
+    `,
     values: [name, telephone, email, message1, message2, message3],
   };
 
-  pool.query(query, (err, result) => {
+  pool.query(query, (err, res) => {
     if (err) {
-      console.error('Error inserting data:', err);
-      res.status(500).send('Error inserting data');
-      return;
+      console.error(err);
+      return res.status(500).send('Error inserting form data');
     }
     console.log('Data inserted successfully');
-    res.send('Form submitted successfully!');
+    res.send(`Form submitted successfully! ID: ${res.rows.insertId}`);
   });
 
-  // Close the database connection pool
+  // Close the database connection
   pool.end();
 });
 
-// Start the server
+app.use('/form', formsRouter);
+
+const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });

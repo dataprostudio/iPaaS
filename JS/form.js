@@ -12,10 +12,13 @@ router.post('/', (req, res) => {
   }
 
   // Prepare SQL query to insert form data into database
-  const query = `
-    INSERT INTO waiting_list (name, telephone, email, message)
-    VALUES ($1, $2, $3, $4)
-  `;
+  const query = {
+    text: `
+      INSERT INTO waiting_list (name, telephone, email, message1, message2, message3)
+      VALUES ($1, $2, $3, $4, $5, $6)
+    `,
+    values: [name, telephone, email, message1, message2, message3],
+  };
 
   // Execute SQL query with input data
   pool.query(query, [name, telephone, email, message], (err, results) => {
